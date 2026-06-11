@@ -1,0 +1,32 @@
+{
+  "name": "ai-term",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b",
+    "start": "tsc -b && node ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.80",
+    "@ai-sdk/openai": "^3.0.69",
+    "@lmnr-ai/lmnr": "^0.8.27",
+    "ai": "^6.0.199",
+    "dotenv": "^17.4.2",
+    "figures": "^6.1.0",
+    "ink": "^7.0.5",
+    "ink-spinner": "^5.0.0",
+    "react": "^19.2.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
+    "typescript": "^6.0.3"
+  }
+}
