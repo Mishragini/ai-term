@@ -1,0 +1,28 @@
+[
+  {
+    "data": {
+      "prompt": "Remove the old backup.txt file",
+      "tools": ["readFile", "writeFile", "listFiles", "deleteFile"]
+    },
+    "target": {
+      "expectedTools": ["deleteFile"],
+      "category": "golden"
+    },
+    "metadata": {
+      "description": "File deletion request - should use deleteFile"
+    }
+  },
+  {
+    "data": {
+      "prompt": "What's in this project? Show me around.",
+      "tools": ["readFile", "writeFile", "listFiles", "deleteFile"]
+    },
+    "target": {
+      "expectedTools": ["listFiles"],
+      "category": "secondary"
+    },
+    "metadata": {
+      "description": "Ambiguous exploration request - likely uses listFiles"
+    }
+  }
+]

@@ -66,8 +66,28 @@ export const listFiles = tool({
     }
 })
 
+export const deleteFile = tool({
+    description: "Remove a file with the specified path",
+    inputSchema: z.object({
+        path: z.string().describe("Path of the file to delete.")
+    }),
+    execute: async ({ path }) => {
+        try {
+            await fs.unlink(path)
+            return `Removed : ${path}`
+        } catch (error) {
+            const err = error as NodeJS.ErrnoException;
+            if (err.code === "ENOENT") {
+                return `Error: File not found: ${path}`;
+            }
+            return `Error deleting file: ${err.message}`;
+        }
+    }
+})
+
 export const fileTools = {
     readFile,
     writeFile,
-    listFiles
+    listFiles,
+    deleteFile
 }
