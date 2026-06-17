@@ -15,6 +15,7 @@ function truncate(text: string, max = 60) {
 }
 
 export function ToolCall({ name, status, args }: ToolCallProps) {
+  console.log("input....", args);
   return (
     <Box gap={1}>
       {status === "pending" ? (

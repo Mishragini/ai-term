@@ -49,13 +49,13 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
                 }
 
                 if (chunk.type === "tool-call") {
-                    const args = chunk?.input ?? {}
+                    const input = chunk?.input ?? {}
                     toolCalls.push({
                         toolCallId: chunk.toolCallId,
                         toolName: chunk.toolName,
-                        args
+                        input
                     })
-                    callbacks.onToolCallStart(chunk.toolName, chunk.toolCallId, args)
+                    callbacks.onToolCallStart(chunk.toolName, chunk.toolCallId, input)
                 }
             }
 
@@ -90,7 +90,7 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
         //tool-call execution after the fullStream loop
         //Expected sequence of messages array : user -> assistant -> tool 
         for (const tc of toolCalls) {
-            const result = await executeTool(tc.toolName, tc.args, tc.toolCallId) as string
+            const result = await executeTool(tc.toolName, tc.input, tc.toolCallId) as string
             callbacks.onToolCallEnd(tc.toolName, result)
             messages.push(
                 {

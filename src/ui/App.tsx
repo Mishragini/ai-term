@@ -20,65 +20,68 @@ export function App() {
     ModelMessage[]
   >([]);
 
-  const handleSubmit = useCallback(async (userInput: string) => {
-    if (
-      userInput.toLowerCase() === "exit" ||
-      userInput.toLowerCase() === "quit"
-    ) {
-      exit();
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (userInput: string) => {
+      if (
+        userInput.toLowerCase() === "exit" ||
+        userInput.toLowerCase() === "quit"
+      ) {
+        exit();
+        return;
+      }
 
-    setMessages((prev) => [...prev, { role: "user", content: userInput }]);
-    setLoading(true);
+      setMessages((prev) => [...prev, { role: "user", content: userInput }]);
+      setLoading(true);
 
-    try {
-      const newHistory = await runAgent(userInput, conversationHistory, {
-        onToken: (token) => {
-          setStreamingText((prev) => prev + token);
-        },
-        onToolCallStart: (name, id, input) => {
-          setActiveToolCalls((prev) => [
-            ...prev,
-            {
-              id,
-              name,
-              args: input,
-              status: "pending",
-            },
-          ]);
-        },
-        onToolCallEnd: (name, result) => {
-          setActiveToolCalls((prev) =>
-            prev.map((tc) =>
-              tc.name === name && tc.status === "pending"
-                ? { ...tc, status: "completed", result }
-                : tc,
-            ),
-          );
-        },
-        onComplete: (fullResponse) => {
-          setStreamingText("");
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: fullResponse },
-          ]);
-          setActiveToolCalls([]);
-        },
-      });
-      setConversationHistory(newHistory);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Error: ${error instanceof Error ? error.message : "Unknown Error"}`,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }, [conversationHistory, exit]);
+      try {
+        const newHistory = await runAgent(userInput, conversationHistory, {
+          onToken: (token) => {
+            setStreamingText((prev) => prev + token);
+          },
+          onToolCallStart: (name, id, input) => {
+            setActiveToolCalls((prev) => [
+              ...prev,
+              {
+                id,
+                name,
+                args: input,
+                status: "pending",
+              },
+            ]);
+          },
+          onToolCallEnd: (name, result) => {
+            setActiveToolCalls((prev) =>
+              prev.map((tc) =>
+                tc.name === name && tc.status === "pending"
+                  ? { ...tc, status: "completed", result }
+                  : tc,
+              ),
+            );
+          },
+          onComplete: (fullResponse) => {
+            setStreamingText("");
+            setMessages((prev) => [
+              ...prev,
+              { role: "assistant", content: fullResponse },
+            ]);
+            setActiveToolCalls([]);
+          },
+        });
+        setConversationHistory(newHistory);
+      } catch (error) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `Error: ${error instanceof Error ? error.message : "Unknown Error"}`,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [conversationHistory, exit],
+  );
 
   return (
     <Box flexDirection="column" paddingX={1}>
