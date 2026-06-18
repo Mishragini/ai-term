@@ -4,7 +4,8 @@ export interface AgentCallbacks {
     onToolCallEnd: (name: string, result: string) => void
     onComplete: (fullResponse: string) => void
     onTokenUsage: ({ inputTokens, outputTokens, totalTokens, contextWindow, threshold, percentage }:
-        TokenUsageInfo) => void
+        TokenUsageInfo) => void,
+    onToolApproval: (toolName: string, args: {}) => Promise<boolean>
 }
 
 export interface ModelLimits {
@@ -20,4 +21,10 @@ export interface TokenUsageInfo {
     contextWindow: number,
     threshold: number,
     percentage: number
+}
+
+export interface toolApprovalRequest {
+    toolName: string,
+    args: {},
+    resolve: (value: boolean | PromiseLike<boolean>) => void
 }

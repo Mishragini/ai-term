@@ -1,5 +1,5 @@
-import {  openai } from "@ai-sdk/openai";
-import {  LMNR_PROJECT_API_KEY} from "../config.js";
+import { openai } from "@ai-sdk/openai";
+import { LMNR_PROJECT_API_KEY } from "../config.js";
 import { getTracer, Laminar } from "@lmnr-ai/lmnr";
 import { streamText, type ModelMessage } from "ai";
 import type { AgentCallbacks } from "./type.js";
@@ -27,11 +27,16 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
     let messages: ModelMessage[] = []
     if (isOverThreshold(tokens.total, limits.contextWindow)) {
         workingHistory = await compactConversation(workingHistory)
+        messages = [
+            ...workingHistory,
+            { role: "user", content: userMessage }
+        ]
     }
     messages = [
-        ...workingHistory,
+        ...conversationHistory,
         { role: "user", content: userMessage }
     ]
+
 
     let fullResponse = ""
 
@@ -120,7 +125,17 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
 
         //tool-call execution after the fullStream loop
         //Expected sequence of messages array : user -> assistant -> tool 
+        let rejected = false
         for (const tc of toolCalls) {
+            if (tc.toolName === "shellCommand" || tc.toolName === "execCode") {
+                const approved = await callbacks.onToolApproval(tc.toolName, tc.input)
+                if (!approved) {
+                    rejected = true
+                    break
+                }
+            }
+
+
             const result = await executeTool(tc.toolName, tc.input, tc.toolCallId) as string
             callbacks.onToolCallEnd(tc.toolName, result)
             messages.push(
@@ -136,6 +151,10 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
                 }
             )
             reportTokenUsage()
+        }
+
+        if (rejected) {
+            break
         }
     }
 
