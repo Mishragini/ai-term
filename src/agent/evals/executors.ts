@@ -1,6 +1,6 @@
 import { generateText, stepCountIs, type ModelMessage, type ToolSet } from "ai";
 import type { EvalData, MultiturnEvalData } from "./types.js";
-import { SYSTEM_PROMPT } from "../system_prompt.js";
+import { SYSTEM_PROMPT } from "../system/system_prompt.js";
 import z from "zod";
 import { tool } from "ai"
 

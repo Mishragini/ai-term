@@ -5,6 +5,8 @@ import { ToolCall, type ToolCallProps } from "./components/ToolCall.js";
 import { Input } from "./components/Input.js";
 import { runAgent } from "../agent/run.js";
 import type { ModelMessage } from "ai";
+import { TokenUsage } from "./components/TokenUsage.js";
+import type { TokenUsageInfo } from "../agent/type.js";
 
 interface ActiveToolCall extends ToolCallProps {
   id: string;
@@ -19,6 +21,7 @@ export function App() {
   const [conversationHistory, setConversationHistory] = useState<
     ModelMessage[]
   >([]);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsageInfo | null>(null);
 
   const handleSubmit = useCallback(
     async (userInput: string) => {
@@ -66,6 +69,8 @@ export function App() {
             ]);
             setActiveToolCalls([]);
           },
+          onTokenUsage: (usage) => {
+            setTokenUsage(usage); },
         });
         setConversationHistory(newHistory);
       } catch (error) {
@@ -113,6 +118,8 @@ export function App() {
         )}
       </Box>
       <Input onSubmit={handleSubmit} disabled={loading} />
+
+      <TokenUsage usage={tokenUsage} />
     </Box>
   );
 }

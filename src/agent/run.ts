@@ -1,30 +1,60 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import { GEMINI_API_KEY, LMNR_PROJECT_API_KEY, OPENAI_API_KEY } from "../config.js";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import {  openai } from "@ai-sdk/openai";
+import {  LMNR_PROJECT_API_KEY} from "../config.js";
 import { getTracer, Laminar } from "@lmnr-ai/lmnr";
 import { streamText, type ModelMessage } from "ai";
 import type { AgentCallbacks } from "./type.js";
-import { SYSTEM_PROMPT } from "./system_prompt.js";
+import { SYSTEM_PROMPT } from "./system/system_prompt.js";
 import { tools } from "./tools/index.js";
 import { executeTool } from "./executeTool.js";
+import { filterMessages } from "./system/filterMessages.js";
+import { estimateMessagesTokens } from "./context/index.js";
+import { calculateUsagePercentage, DEFAULT_THRESHOLD, getModelLimits, isOverThreshold } from "./context/modelLimits.js";
+import { compactConversation } from "./context/compaction.js";
 
 Laminar.initialize({ projectApiKey: LMNR_PROJECT_API_KEY })
 
-export async function runAgent(userMessage: string, conversationHistory: ModelMessage[], callbacks: AgentCallbacks) {
-    const openai = createOpenAI({ apiKey: OPENAI_API_KEY })
-    const google = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })
+const MODEL_NAME = "gpt-5-mini"
 
-    const messages: ModelMessage[] = [
-        ...conversationHistory,
+export async function runAgent(userMessage: string, conversationHistory: ModelMessage[], callbacks: AgentCallbacks) {
+    const limits = getModelLimits(MODEL_NAME)
+    let workingHistory = filterMessages(conversationHistory)
+    const tokens = estimateMessagesTokens([
+        { role: "system", content: SYSTEM_PROMPT },
+        ...workingHistory,
+        { role: "user", content: userMessage }
+    ])
+
+    let messages: ModelMessage[] = []
+    if (isOverThreshold(tokens.total, limits.contextWindow)) {
+        workingHistory = await compactConversation(workingHistory)
+    }
+    messages = [
+        ...workingHistory,
         { role: "user", content: userMessage }
     ]
 
     let fullResponse = ""
 
+    const reportTokenUsage = () => {
+        const { input, output, total } = estimateMessagesTokens(messages)
+        callbacks.onTokenUsage(
+            {
+                inputTokens: input,
+                outputTokens: output,
+                totalTokens: total,
+                contextWindow: limits.contextWindow,
+                threshold: DEFAULT_THRESHOLD,
+                percentage: calculateUsagePercentage(total, limits.contextWindow)
+            }
+        )
+    }
+
+    reportTokenUsage()
+
     while (true) {
         const result = streamText({
             //model: google("gemini-2.5-flash"),
-            model: openai("gpt-5-mini"),
+            model: openai(MODEL_NAME),
             system: SYSTEM_PROMPT,
             tools,
             messages,
@@ -83,6 +113,7 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
 
         const finishReason = await result.finishReason
         if (finishReason !== "tool-calls" || toolCalls.length === 0) {
+            reportTokenUsage()
             break;
         }
 
@@ -104,6 +135,7 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
                     ]
                 }
             )
+            reportTokenUsage()
         }
     }
 
