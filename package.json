@@ -1,5 +1,5 @@
 {
-  "name": "ai-term",
+  "name": "@mishri/ai-term",
   "version": "1.0.0",
   "description": "Terminal AI agent with file, shell, code, and web search tools",
   "type": "module",
