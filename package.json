@@ -1,11 +1,14 @@
 {
   "name": "@mishri/ai-term",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Terminal AI agent with file, shell, code, and web search tools",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "ai-term": "dist/index.js"
+    "ai-term": "./dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist"

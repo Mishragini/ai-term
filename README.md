@@ -20,23 +20,41 @@ npm start
 
 Type your prompt at the `>` prompt. Type `exit` or `quit` to leave.
 
-## Install globally (after publishing to npm)
+## Install from npm
+ Each user sets their own keys locally.
 
-Once published:
+### Option 1 — export in your shell
 
 ```bash
-npm install -g ai-term
+export OPENAI_API_KEY=your-key-here
+npx @mishri/ai-term
+```
+
+### Option 2 — `.env` file in the folder where you run the command
+
+Create a `.env` file in your current directory (e.g. `~/Desktop/.env`):
+
+```bash
+OPENAI_API_KEY=your-key-here
+# optional:
+# LMNR_PROJECT_API_KEY=your-laminar-key
+```
+
+Then run:
+
+```bash
+npx @mishri/ai-term
+```
+
+The app loads `.env` from the directory you run it in, not from inside the npm package.
+
+### Option 3 — install globally
+
+```bash
+npm install -g @mishri/ai-term
 export OPENAI_API_KEY=your-key-here
 ai-term
 ```
-
-Or run without installing:
-
-```bash
-npx ai-term
-```
-
-Set `OPENAI_API_KEY` in your environment or in a `.env` file in the directory where you run the command.
 
 ## Environment variables
 
@@ -67,7 +85,7 @@ npm run eval-multiturn  # run multi-turn agent evals
 
 ```bash
 npm login
-npm publish
+npm publish --access public
 ```
 
 The package ships the compiled `dist/` output and exposes the `ai-term` CLI command.

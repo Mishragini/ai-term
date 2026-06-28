@@ -11,7 +11,10 @@ import { estimateMessagesTokens } from "./context/index.js";
 import { calculateUsagePercentage, DEFAULT_THRESHOLD, getModelLimits, isOverThreshold } from "./context/modelLimits.js";
 import { compactConversation } from "./context/compaction.js";
 
-Laminar.initialize({ projectApiKey: LMNR_PROJECT_API_KEY })
+const tracingEnabled = Boolean(LMNR_PROJECT_API_KEY)
+if (tracingEnabled) {
+    Laminar.initialize({ projectApiKey: LMNR_PROJECT_API_KEY })
+}
 
 const MODEL_NAME = "gpt-5-mini"
 
@@ -63,10 +66,9 @@ export async function runAgent(userMessage: string, conversationHistory: ModelMe
             system: SYSTEM_PROMPT,
             tools,
             messages,
-            experimental_telemetry: {
-                isEnabled: true,
-                tracer: getTracer()
-            }
+            experimental_telemetry: tracingEnabled
+                ? { isEnabled: true, tracer: getTracer() }
+                : { isEnabled: false },
         })
 
         // need this to call execute the toolCalls 
